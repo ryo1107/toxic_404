@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Toxic_404-料金計算</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--text:#222;--muted:#666;--pri:#2563eb}
+body.dark{--bg:#111827;--card:#1f2937;--text:#f3f4f6;--muted:#9ca3af;--pri:#60a5fa}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui;background:var(--bg);color:var(--text)}
+.wrap{max-width:900px;margin:auto;padding:20px}
+.card{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 8px 20px rgba(0,0,0,.08)}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+table{width:100%;table-layout:fixed;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid #ddd}
+th:nth-child(1){width:40%}th:nth-child(2){width:18%}th:nth-child(3){width:150px}th:nth-child(4){width:22%}
+td:nth-child(2),td:nth-child(4){text-align:right}
+.qty{display:flex;justify-content:center;gap:6px}
+.qty button{width:32px;height:32px}
+.qty input{width:56px;text-align:center}
+.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:16px}
+button{cursor:pointer;border:none;border-radius:10px;padding:10px 14px;background:var(--pri);color:#fff}
+button.sec{background:#6b7280}
+.total{font-size:28px;font-weight:bold;text-align:right;padding-top:16px}
+@media(max-width:700px){th:nth-child(2),td:nth-child(2){display:none}th,td{font-size:14px}}
+</style></head><body>
+<div class="wrap"><div class="card">
+<div class="top"><h2>Toxic_404-料金計算</h2><button id="theme">🌙</button></div>
+<table><thead><tr><th>商品</th><th>単価</th><th>数量</th><th>小計</th></tr></thead><tbody id="tb"></tbody></table>
+<div class="total">合計: ¥<span id="total">0</span></div>
+<div class="actions">
+<button id="copy">📋 合計コピー</button>
+<button class="sec" id="reset">🗑 全て0にする</button>
+</div></div></div>
+<script>
+const products=[
+{name:"Player_01(50%:50%)",price:200000},
+{name:"GameOver(35%:35%)",price:100000},
+{name:"Jackpot(50%:0%)",price:50000},
+{name:"SavePoint(0%:50%)",price:50000},
+{name:"OverRun",price:150000},
+{name:"OverHeat",price:300000},
+{name:"NewGame",price:10000000}
+];
+const tb=document.getElementById('tb');
+let qty=JSON.parse(localStorage.getItem('qty')||'[]');
+function fmt(n){return n.toLocaleString('ja-JP')}
+function save(){localStorage.setItem('qty',JSON.stringify(qty))}
+function render(){
+tb.innerHTML='';
+let total=0;
+products.forEach((p,i)=>{
+ let q=qty[i]||0,s=q*p.price; total+=s;
+ let tr=document.createElement('tr');
+ tr.innerHTML=`<td>${p.name}</td><td>¥${fmt(p.price)}</td>
+ <td><div class="qty"><button onclick="chg(${i},-1)">−</button>
+ <input type="number" min="0" value="${q}" onchange="setQty(${i},this.value)">
+ <button onclick="chg(${i},1)">＋</button></div></td>
+ <td>¥${fmt(s)}</td>`;
+ tb.appendChild(tr);
+});
+document.getElementById('total').textContent=fmt(total);
+save();
+}
+window.chg=(i,d)=>{qty[i]=Math.max(0,(qty[i]||0)+d);render();}
+window.setQty=(i,v)=>{qty[i]=Math.max(0,parseInt(v)||0);render();}
+document.getElementById('copy').onclick=async()=>{
+ const raw=document.getElementById('total').textContent.replace(/,/g,'');
+ await navigator.clipboard.writeText(raw);
+ const b=copy;b.textContent='✔ コピー完了';setTimeout(()=>b.textContent='📋 合計コピー',1200);
+}
+document.getElementById('reset').onclick=()=>{qty=products.map(()=>0);render();}
+const dark=localStorage.getItem('dark')==='1';if(dark)document.body.classList.add('dark');
+theme.onclick=()=>{document.body.classList.toggle('dark');localStorage.setItem('dark',document.body.classList.contains('dark')?'1':'0');}
+render();
+</script></body></html>
